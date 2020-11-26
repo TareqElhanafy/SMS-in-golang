@@ -38,7 +38,12 @@ func (db *database) StoreUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
 	}
-
+	token, err := user.GenerateToken(user.ID)
+	if err != nil {
+		panic("error to generate token")
+	}
+	user.Tokens = append(user.Tokens, token)
+	db.connection.Save(&user)
 	ctx.JSON(200, gin.H{
 		"code":   200,
 		"status": "success",

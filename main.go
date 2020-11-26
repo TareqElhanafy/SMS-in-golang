@@ -2,6 +2,7 @@ package main
 
 import (
 	"SMS/controller"
+	"SMS/middleware"
 	"SMS/repository"
 	"SMS/service"
 	"net/http"
@@ -25,6 +26,8 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	})
-
+	server.GET("/users", middleware.Auth(), func(ctx *gin.Context) {
+		ctx.JSON(200, "hi")
+	})
 	server.Run(":1001")
 }
