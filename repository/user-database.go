@@ -3,19 +3,21 @@ package repository
 import (
 	"SMS/model"
 	"SMS/validator"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-//UserDatabase interface that describe
+//UserDatabase interface that describes the user functions
 type UserDatabase interface {
 	StoreUser(ctx *gin.Context)
 	Login(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 }
 
-//create new user
+//create new user function
 func (db *database) StoreUser(ctx *gin.Context) {
 
 	rules := map[string][]string{
@@ -66,7 +68,7 @@ func (db *database) StoreUser(ctx *gin.Context) {
 
 }
 
-// user login
+// user login function
 func (db *database) Login(ctx *gin.Context) {
 	rules := map[string][]string{
 		"email":    {"required", "email"},
@@ -99,7 +101,7 @@ func (db *database) Login(ctx *gin.Context) {
 	}
 	result2 := db.connection.Debug().Create(&storingToken)
 	if result2.Error != nil {
-		ctx.JSON(http.StatusNotFound, result2.Error)
+		ctx.JSON(http.StatusUnprocessableEntity, result2.Error)
 		return
 	}
 	ctx.JSON(http.StatusFound, gin.H{
@@ -107,5 +109,21 @@ func (db *database) Login(ctx *gin.Context) {
 		"status":  "success",
 		"message": "Logged in !",
 		"token":   token,
+	})
+}
+
+func (db *database) Logout(ctx *gin.Context) {
+	var token model.Token
+	user := ctx.Value("user").(model.User)
+	fmt.Print(user)
+	result := db.connection.Debug().Where("user_id = ?", user.ID).Delete(&token)
+	if result.Error != nil {
+		ctx.JSON(http.StatusBadRequest, result.Error)
+		return
+	}
+	ctx.JSON(http.StatusFound, gin.H{
+		"code":    200,
+		"status":  "success",
+		"message": "Logged out !",
 	})
 }

@@ -10,6 +10,7 @@ import (
 type UserController interface {
 	StoreUser(ctx *gin.Context) error
 	Login(ctx *gin.Context) error
+	Logout(ctx *gin.Context) error
 }
 
 type userController struct {
@@ -29,5 +30,9 @@ func (controller *userController) StoreUser(ctx *gin.Context) error {
 }
 func (controller *userController) Login(ctx *gin.Context) error {
 	controller.service.Login(ctx)
+	return nil
+}
+func (controller *userController) Logout(ctx *gin.Context) error {
+	controller.service.Logout(ctx)
 	return nil
 }

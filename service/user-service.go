@@ -6,9 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//UserService interface
 type UserService interface {
 	StoreUser(ctx *gin.Context)
 	Login(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 }
 
 type userService struct {
@@ -27,4 +29,7 @@ func (service *userService) StoreUser(ctx *gin.Context) {
 }
 func (service *userService) Login(ctx *gin.Context) {
 	service.repository.Login(ctx)
+}
+func (service *userService) Logout(ctx *gin.Context) {
+	service.repository.Logout(ctx)
 }

@@ -32,6 +32,12 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	})
+	server.GET("/users/logout", middleware.Auth(), func(ctx *gin.Context) {
+		err := userController.Logout(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+	})
 	server.GET("/users", middleware.Auth(), func(ctx *gin.Context) {
 		ctx.JSON(200, "hi")
 	})
