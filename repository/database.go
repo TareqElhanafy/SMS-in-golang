@@ -30,7 +30,7 @@ func NewDatabaseRepository() DatabaseRepository {
 		panic("failed to connect to database")
 	} else {
 		fmt.Println("connected to database")
-		db.AutoMigrate(&model.User{})
+		db.Debug().AutoMigrate(&model.User{}, &model.Token{})
 	}
 
 	return &database{

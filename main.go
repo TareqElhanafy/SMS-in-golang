@@ -26,6 +26,12 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	})
+	server.POST("/users/login", func(ctx *gin.Context) {
+		err := userController.Login(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+	})
 	server.GET("/users", middleware.Auth(), func(ctx *gin.Context) {
 		ctx.JSON(200, "hi")
 	})

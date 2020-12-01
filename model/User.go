@@ -14,20 +14,27 @@ import (
 
 //User Model
 type User struct {
-	ID        uint      `gorm:"primaryKey;  autoIncrement; not null" json:"id"`
+	ID        uint      `gorm:"primaryKey; autoIncrement; not null" json:"id"`
 	Name      string    `gorm:"type:varchar(100)" json:"name"`
-	Email     string    `gorm:"type:varchar(100); unique" binding:"required" json:"email"`
+	Email     string    `gorm:"type:varchar(100); unique" json:"email"`
 	Password  string    `gorm:"varchar(255)" json:"-"`
-	Tokens    []string  `json:"tokens" gorm:"type:string"`
+	Tokens    []Token   `json:"-" gorm:"foreignKey:UserID; constraint:OnDelete:SET NULL;"`
 	CreatedAt time.Time `json:"created_at" gorm:"default:CURRENT_TIMESTAMP" `
 	UpdatedAt time.Time `json:"updated_at" gorm:"default:CURRENT_TIMESTAMP"`
 }
 
+//Token Model
+type Token struct {
+	ID     uint   `gorm:"primaryKey; autoIncrement; not null" json:"id"`
+	UserID uint   `json:"-"`
+	Token  string `json:"token" gorm:"type:varchar(255)"`
+}
+
 //BeforeSave Hook function to hash passwords before saveing
 func (u *User) BeforeSave(tx *gorm.DB) error {
-	hashedPassword, err1 := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err1 != nil {
-		return err1
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
 	}
 	u.Password = string(hashedPassword)
 	u.UpdatedAt = time.Now()
