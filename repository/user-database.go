@@ -24,6 +24,7 @@ func (db *database) StoreUser(ctx *gin.Context) {
 		"name":     {"required"},
 		"email":    {"required", "email"},
 		"password": {"required", "minlength:6"},
+		"role":     {"required"},
 	}
 
 	if msgs, err := validator.Validate(ctx, rules); err {
@@ -32,18 +33,19 @@ func (db *database) StoreUser(ctx *gin.Context) {
 	}
 
 	var user model.User
-	var tokens []model.Token
 	user = model.User{
 		Name:     ctx.PostForm("name"),
 		Email:    ctx.PostForm("email"),
 		Password: ctx.PostForm("password"),
+		Role:     ctx.PostForm("role"),
 	}
-	user.Prepare()
-	result := db.connection.Debug().Select("Name", "Email", "Password").Create(&user) //specifing the columns which should be filled
+	user.Prepare()                                                                            //Escaping and trimming the inputs
+	result := db.connection.Debug().Select("Name", "Email", "Password", "Role").Create(&user) //specifing the columns which should be filled
 	if result.Error != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
 	}
+
 	token, err := user.GenerateToken(user.ID)
 	if err != nil {
 		panic("error to generate token")
@@ -57,8 +59,6 @@ func (db *database) StoreUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, result2.Error)
 		return
 	}
-	db.connection.Debug().Model(&user).Where("user_id = ?", user.ID).Association("Tokens").Find(&tokens)
-
 	ctx.JSON(200, gin.H{
 		"code":   200,
 		"status": "success",

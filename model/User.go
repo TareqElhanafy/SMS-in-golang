@@ -18,6 +18,7 @@ type User struct {
 	Name       string      `gorm:"type:varchar(100)" json:"name"`
 	Email      string      `gorm:"type:varchar(100); unique" json:"email"`
 	Password   string      `gorm:"varchar(255)" json:"-"`
+	Role       string      `gorm:"type:ENUM('superAdmin','professor')" json:"role"`
 	Tokens     []Token     `json:"-" gorm:"foreignKey:UserID; constraint:OnDelete:SET NULL;"`
 	Professors []Professor `json:"professor_details" gorm:"foreignKey:UserID; constraint:OnDelete:SET NULL;"`
 	CreatedAt  time.Time   `json:"created_at" gorm:"default:CURRENT_TIMESTAMP" `
@@ -46,6 +47,7 @@ func (u *User) BeforeSave(tx *gorm.DB) error {
 func (u *User) Prepare() {
 	u.Name = html.EscapeString(strings.TrimSpace(u.Name))
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
+	u.Role = html.EscapeString(strings.TrimSpace(u.Role))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 }

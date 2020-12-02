@@ -42,7 +42,15 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be at least "+strconv.Itoa(number)+" characters")
 
 				}
+			case "integer":
+				if value, err := strconv.Atoi(ctx.PostForm(field)); err != nil {
+					msgs[field] = append(msgs[field], field+" must be valid positive number")
+				} else if value < 0 {
+					msgs[field] = append(msgs[field], field+" must be valid positive number")
+				}
+
 			}
+
 		}
 
 	}
