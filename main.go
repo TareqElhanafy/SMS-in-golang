@@ -23,33 +23,41 @@ var (
 func main() {
 
 	server := gin.New()
-	server.POST("/users", func(ctx *gin.Context) {
-		err := userController.StoreUser(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-	})
-	server.POST("/users/login", func(ctx *gin.Context) {
-		err := userController.Login(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-	})
-	server.GET("/users/logout", middleware.Auth(), func(ctx *gin.Context) {
-		err := userController.Logout(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-	})
-	server.GET("/users", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
-		ctx.JSON(200, "hi")
-	})
+	usersRoutes := server.Group("/users")
+	{
+		usersRoutes.POST("/", func(ctx *gin.Context) {
+			err := userController.StoreUser(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
+		usersRoutes.POST("/login", func(ctx *gin.Context) {
+			err := userController.Login(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
+		usersRoutes.GET("/logout", middleware.Auth(), func(ctx *gin.Context) {
+			err := userController.Logout(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		})
+		usersRoutes.GET("/all", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			ctx.JSON(200, "hi")
+		})
 
-	server.POST("/profs", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
-		err := professorController.StoreProf(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-	})
-	server.Run(":1001")
+	}
+	profsRoutes := server.Group("/profs")
+	{
+		profsRoutes.POST("/", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := professorController.StoreProf(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
+	}
+
+	server.Run(":1002")
 }
