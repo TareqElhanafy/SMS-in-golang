@@ -11,9 +11,6 @@ import (
 
 //ValidateToken funtion to parse the token and compare it with the JWT_SECRET
 func ValidateToken(tokenString string) (*jwt.Token, error) {
-	if tokenString == "" {
-		return nil, fmt.Errorf("Unauthorized")
-	}
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

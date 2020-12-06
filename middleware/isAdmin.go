@@ -24,5 +24,3 @@ func IsAdmin() gin.HandlerFunc {
 	}
 
 }
-
-//Debug().Where("user_id = ?", user.ID).First(&newuser)

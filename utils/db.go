@@ -19,7 +19,7 @@ func DB() *gorm.DB {
 		panic("failed to connect to database")
 	} else {
 		fmt.Println("connected to database")
-		db.Debug().AutoMigrate(&model.User{}, &model.Token{}, &model.Professor{})
+		db.Debug().AutoMigrate(&model.User{}, &model.Token{}, &model.Professor{}, &model.Subject{})
 	}
 	return db
 }

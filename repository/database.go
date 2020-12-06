@@ -10,6 +10,7 @@ import (
 type DatabaseRepository interface {
 	UserDatabase
 	ProfessorDatabase
+	SubjectRepository
 }
 
 type database struct {

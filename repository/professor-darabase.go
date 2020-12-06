@@ -65,7 +65,7 @@ func (db *database) StoreProf(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, result3.Error)
 		return
 	}
-	db.connection.Debug().Preload("Professors").Find(&user)
+	db.connection.Debug().Preload("Professor").Find(&user)
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":   200,
 		"status": "success",

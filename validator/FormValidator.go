@@ -20,7 +20,6 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 			case "required":
 				_, singleInput := ctx.GetPostForm(field)         //returns value and bool(true or false) for the every field like username ,password,email
 				_, multipleInputs := ctx.GetPostFormArray(field) //returns value and bool(true or false) for every field if it takes array
-
 				if !singleInput && !multipleInputs {
 					msgs[field] = append(msgs[field], field+" is required")
 				}
@@ -47,6 +46,13 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be valid positive number")
 				} else if value < 0 {
 					msgs[field] = append(msgs[field], field+" must be valid positive number")
+				}
+			case "pdf":
+				_, header, _ := ctx.Request.FormFile(field)
+				nameParts := strings.Split(header.Filename, ".")
+				extension := nameParts[1]
+				if extension != "pdf" {
+					msgs[field] = append(msgs[field], "only pdf files are allowed")
 				}
 
 			}

@@ -5,24 +5,32 @@ import (
 	"SMS/middleware"
 	"SMS/repository"
 	"SMS/service"
+	"SMS/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	databaseRepository  repository.DatabaseRepository  = repository.NewDatabaseRepository()
 	userRepository      repository.UserDatabase        = repository.NewDatabaseRepository()
 	professorRepository repository.ProfessorDatabase   = repository.NewDatabaseRepository()
+	subjectRepository   repository.SubjectRepository   = repository.NewDatabaseRepository()
 	userService         service.UserService            = service.NewUserService(userRepository)
 	professorService    service.ProfessorService       = service.NewProfessorService(professorRepository)
+	subjectService      service.SubjectService         = service.NewSubjectService(subjectRepository)
 	professorController controller.ProfessorController = controller.NewProfessorController(professorService)
 	userController      controller.UserController      = controller.NewUserController(userService)
+	subjectController   controller.SubjectController   = controller.NewSubjectController(subjectService)
 )
 
 func main() {
 
-	server := gin.New()
+	session := utils.ConnectAws() // connecting to AWS by creating a session to be able to use SDK's service clients
+	server := gin.Default()
+	server.Use(func(ctx *gin.Context) {
+		ctx.Set("sess", session)
+		ctx.Next()
+	})
 	usersRoutes := server.Group("/users")
 	{
 		usersRoutes.POST("/", func(ctx *gin.Context) {
@@ -51,8 +59,14 @@ func main() {
 	}
 	profsRoutes := server.Group("/profs")
 	{
-		profsRoutes.POST("/", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+		profsRoutes.POST("/new", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
 			err := professorController.StoreProf(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
+		profsRoutes.POST("/create-subject", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := subjectController.Create(ctx)
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			}
