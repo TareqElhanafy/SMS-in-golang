@@ -22,6 +22,7 @@ func Auth() gin.HandlerFunc {
 			ctx.Set("user", user)
 		} else {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
+			return
 		}
 		ctx.Next()
 	}

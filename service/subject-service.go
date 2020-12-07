@@ -9,6 +9,8 @@ import (
 //SubjectService interface which describes the subject functions
 type SubjectService interface {
 	Create(ctx *gin.Context)
+	GetSubjects(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type subjectService struct {
@@ -24,4 +26,11 @@ func NewSubjectService(repository repository.SubjectRepository) SubjectService {
 
 func (service *subjectService) Create(ctx *gin.Context) {
 	service.repository.Create(ctx)
+}
+
+func (service *subjectService) GetSubjects(ctx *gin.Context) {
+	service.repository.GetSubjects(ctx)
+}
+func (service *subjectService) Delete(ctx *gin.Context) {
+	service.repository.Delete(ctx)
 }

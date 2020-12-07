@@ -29,7 +29,10 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 //ValidateUser function
 func ValidateUser(tokenString string) (model.User, bool) {
 	var user model.User
-	token, _ := ValidateToken(tokenString)
+	token, err := ValidateToken(tokenString)
+	if err != nil {
+		return user, false
+	}
 	if token.Valid {
 		claims := token.Claims.(jwt.MapClaims)
 		user.ID = uint(claims["user_id"].(float64))

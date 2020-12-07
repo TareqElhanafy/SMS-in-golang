@@ -71,6 +71,18 @@ func main() {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			}
 		})
+		profsRoutes.GET("/my-subjects", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := subjectController.GetSubjects(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
+		profsRoutes.DELETE("/subject/:id/delete", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := subjectController.Delete(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
 	}
 
 	server.Run(":1002")

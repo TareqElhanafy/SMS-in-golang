@@ -17,10 +17,9 @@ func IsAdmin() gin.HandlerFunc {
 		db := utils.DB()
 		result := db.Debug().Where(&model.User{ID: user.ID, Role: "superAdmin"}).First(&user)
 		if result.Error != nil {
-			ctx.JSON(http.StatusUnauthorized, "Unauthorized")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
-		ctx.Next()
 	}
 
 }
