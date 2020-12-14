@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"SMS/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,8 +31,10 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be valid")
 				}
 			case "file":
-				_, err := ctx.FormFile("file") //takes the name of the field of files if exists
+				file, err := ctx.FormFile("file") //takes the name of the field of files if exists
 				if err != nil {
+					msgs[field] = append(msgs[field], "there is no file")
+				} else if file == nil {
 					msgs[field] = append(msgs[field], "there is no file")
 				}
 			case "minlength":
@@ -48,13 +51,12 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be valid positive number")
 				}
 			case "pdf":
-				_, header, _ := ctx.Request.FormFile(field)
-				nameParts := strings.Split(header.Filename, ".")
-				extension := nameParts[1]
-				if extension != "pdf" {
+				file, header, err := ctx.Request.FormFile(field)
+				if file == nil || err != nil {
+					msgs[field] = append(msgs[field], "there is no file")
+				} else if !utils.IsPdf(header) {
 					msgs[field] = append(msgs[field], "only pdf files are allowed")
 				}
-
 			}
 
 		}
