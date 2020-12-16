@@ -9,6 +9,7 @@ import (
 //ProfessorService interface
 type ProfessorService interface {
 	StoreProf(ctx *gin.Context)
+	UpdateProf(ctx *gin.Context)
 }
 
 type professorService struct {
@@ -23,4 +24,7 @@ func NewProfessorService(repository repository.ProfessorDatabase) ProfessorServi
 }
 func (service *professorService) StoreProf(ctx *gin.Context) {
 	service.repository.StoreProf(ctx)
+}
+func (service *professorService) UpdateProf(ctx *gin.Context) {
+	service.repository.UpdateProf(ctx)
 }

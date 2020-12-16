@@ -83,6 +83,12 @@ func main() {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			}
 		})
+		profsRoutes.PUT("/:ID", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := professorController.UpdateProf(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+		})
 	}
 
 	server.Run(":1002")

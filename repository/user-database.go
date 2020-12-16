@@ -88,7 +88,7 @@ func (db *database) Login(ctx *gin.Context) {
 
 	isMatched := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(ctx.PostForm("password")))
 	if isMatched != nil {
-		ctx.JSON(http.StatusUnauthorized, "Unauthorized, please check your email and password are correct")
+		ctx.JSON(http.StatusUnauthorized, "Unauthorized, please check that your email and password are correct")
 		return
 	}
 	token, err := user.GenerateToken(user.ID)

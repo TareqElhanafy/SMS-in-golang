@@ -9,6 +9,7 @@ import (
 //ProfessorController inteface
 type ProfessorController interface {
 	StoreProf(ctx *gin.Context) error
+	UpdateProf(ctx *gin.Context) error
 }
 
 type professorController struct {
@@ -24,5 +25,9 @@ func NewProfessorController(service service.ProfessorService) ProfessorControlle
 
 func (controller *professorController) StoreProf(ctx *gin.Context) error {
 	controller.service.StoreProf(ctx)
+	return nil
+}
+func (controller *professorController) UpdateProf(ctx *gin.Context) error {
+	controller.service.UpdateProf(ctx)
 	return nil
 }

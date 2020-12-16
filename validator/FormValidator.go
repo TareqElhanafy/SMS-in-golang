@@ -31,10 +31,8 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be valid")
 				}
 			case "file":
-				file, err := ctx.FormFile("file") //takes the name of the field of files if exists
+				_, _, err := ctx.Request.FormFile("file") //takes the name of the field of files if exists
 				if err != nil {
-					msgs[field] = append(msgs[field], "there is no file")
-				} else if file == nil {
 					msgs[field] = append(msgs[field], "there is no file")
 				}
 			case "minlength":
@@ -44,15 +42,16 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 					msgs[field] = append(msgs[field], field+" must be at least "+strconv.Itoa(number)+" characters")
 
 				}
-			case "integer":
-				if value, err := strconv.Atoi(ctx.PostForm(field)); err != nil {
-					msgs[field] = append(msgs[field], field+" must be valid positive number")
-				} else if value < 0 {
-					msgs[field] = append(msgs[field], field+" must be valid positive number")
+			case "min":
+				fieldNum, _ := strconv.Atoi(parts[1])
+				num, _ := strconv.Atoi(ctx.PostForm(field))
+				if ctx.PostForm(field) != "" && num < fieldNum {
+					msgs[field] = append(msgs[field], field+"must be at least "+strconv.Itoa(fieldNum))
 				}
+
 			case "pdf":
-				file, header, err := ctx.Request.FormFile(field)
-				if file == nil || err != nil {
+				_, header, err := ctx.Request.FormFile(field)
+				if err != nil {
 					msgs[field] = append(msgs[field], "there is no file")
 				} else if !utils.IsPdf(header) {
 					msgs[field] = append(msgs[field], "only pdf files are allowed")
