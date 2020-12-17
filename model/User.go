@@ -20,7 +20,7 @@ type User struct {
 	Password  string     `gorm:"varchar(255)" json:"-"`
 	Role      string     `gorm:"type:ENUM('superAdmin','professor')" json:"role"`
 	Tokens    []Token    `json:"-" gorm:"foreignKey:UserID; constraint:OnDelete;"`
-	Professor *Professor `json:"professor,omitempty" gorm:"foreignKey:UserID; constraint:OnDelete;"`
+	Professor *Professor `json:"professor,omitempty" gorm:"foreignKey:UserID; constraint:OnDelete:CASCADE;"`
 	Subjects  []Subject  `json:"subjects,omitempty" gorm:"foreignKey:UserID; constraint:OnDelete;"`
 	CreatedAt time.Time  `json:"created_at" gorm:"default:CURRENT_TIMESTAMP" `
 	UpdatedAt time.Time  `json:"updated_at" gorm:"default:CURRENT_TIMESTAMP"`

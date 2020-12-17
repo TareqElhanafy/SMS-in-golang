@@ -8,7 +8,7 @@ import (
 
 //ProfessorController inteface
 type ProfessorController interface {
-	StoreProf(ctx *gin.Context) error
+	StoreOrUpdateProf(ctx *gin.Context) error
 	UpdateProf(ctx *gin.Context) error
 }
 
@@ -23,8 +23,8 @@ func NewProfessorController(service service.ProfessorService) ProfessorControlle
 	}
 }
 
-func (controller *professorController) StoreProf(ctx *gin.Context) error {
-	controller.service.StoreProf(ctx)
+func (controller *professorController) StoreOrUpdateProf(ctx *gin.Context) error {
+	controller.service.StoreOrUpdateProf(ctx)
 	return nil
 }
 func (controller *professorController) UpdateProf(ctx *gin.Context) error {

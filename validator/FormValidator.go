@@ -38,7 +38,7 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 			case "minlength":
 				number, _ := strconv.Atoi(parts[1])
 				fieldNumber := len(ctx.PostForm(field))
-				if ctx.PostForm(field) == "" || fieldNumber < number {
+				if ctx.PostForm(field) != "" && fieldNumber < number {
 					msgs[field] = append(msgs[field], field+" must be at least "+strconv.Itoa(number)+" characters")
 
 				}

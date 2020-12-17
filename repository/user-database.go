@@ -3,11 +3,14 @@ package repository
 import (
 	"SMS/model"
 	"SMS/validator"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 //UserDatabase interface that describes the user functions
@@ -15,6 +18,7 @@ type UserDatabase interface {
 	StoreUser(ctx *gin.Context)
 	Login(ctx *gin.Context)
 	Logout(ctx *gin.Context)
+	DeleteUser(ctx *gin.Context)
 }
 
 //create new user function
@@ -37,10 +41,9 @@ func (db *database) StoreUser(ctx *gin.Context) {
 		Name:     ctx.PostForm("name"),
 		Email:    ctx.PostForm("email"),
 		Password: ctx.PostForm("password"),
-		Role:     ctx.PostForm("role"),
 	}
-	user.Prepare()                                                                            //Escaping and trimming the inputs
-	result := db.connection.Debug().Select("Name", "Email", "Password", "Role").Create(&user) //specifing the columns which should be filled
+	user.Prepare()                                                                    //Escaping and trimming the inputs
+	result := db.connection.Debug().Select("Name", "Email", "Password").Create(&user) //specifing the columns which should be filled
 	if result.Error != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
@@ -68,11 +71,45 @@ func (db *database) StoreUser(ctx *gin.Context) {
 
 }
 
+//delete user function
+func (db *database) DeleteUser(ctx *gin.Context) {
+	UserID, err := strconv.ParseUint(ctx.Param("ID"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code":  http.StatusBadRequest,
+			"error": "Bad Request",
+		})
+		return
+	}
+
+	var user model.User
+	result := db.connection.Debug().Where("id=?", UserID).First(&user)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"code":  404,
+			"error": "There is no user with such an id",
+		})
+		return
+	} else if result.Error != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
+		return
+	}
+	result2 := db.connection.Debug().Delete(&user)
+	if result2.Error != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, result2.Error)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "Successfully Deleted",
+	})
+}
+
 // user login function
 func (db *database) Login(ctx *gin.Context) {
 	rules := map[string][]string{
 		"email":    {"required", "email"},
-		"password": {"required", "minlength:6"},
+		"password": {"required"},
 	}
 
 	if msgs, err := validator.Validate(ctx, rules); err {
@@ -81,14 +118,20 @@ func (db *database) Login(ctx *gin.Context) {
 	}
 	var user model.User
 	result := db.connection.Debug().Where("email = ?", ctx.PostForm("email")).First(&user)
-	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, "Unauthorized, please check your email and password are correct")
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"code":  404,
+			"error": "There is no user with such an email",
+		})
+		return
+	} else if result.Error != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
 	}
 
 	isMatched := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(ctx.PostForm("password")))
 	if isMatched != nil {
-		ctx.JSON(http.StatusUnauthorized, "Unauthorized, please check that your email and password are correct")
+		ctx.JSON(http.StatusUnauthorized, "Unauthorized, please check that your password is correct")
 		return
 	}
 	token, err := user.GenerateToken(user.ID)
@@ -112,6 +155,7 @@ func (db *database) Login(ctx *gin.Context) {
 	})
 }
 
+//logout function
 func (db *database) Logout(ctx *gin.Context) {
 	var token model.Token
 	user := ctx.Value("user").(model.User)

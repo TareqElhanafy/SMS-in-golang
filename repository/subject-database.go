@@ -4,12 +4,14 @@ import (
 	"SMS/model"
 	"SMS/utils"
 	"SMS/validator"
+	"errors"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 //SubjectRepository interface describes subject functions
@@ -73,16 +75,15 @@ func (db *database) GetSubjects(ctx *gin.Context) {
 	user := ctx.Value("user").(model.User)
 	var subjects []model.Subject
 	result := db.connection.Debug().Where("user_id = ?", user.ID).Find(&subjects)
-	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, result.Error)
-		return
-	}
-	if len(subjects) == 0 {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"code":    401,
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"code":    404,
 			"status":  "Not Found",
 			"message": "You do not have any subjects yet",
 		})
+		return
+	} else if result.Error != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
@@ -96,13 +97,15 @@ func (db *database) Delete(ctx *gin.Context) {
 	var subject model.Subject
 	SubjectID := ctx.Param("id")
 	result := db.connection.Debug().Where("id = ?", SubjectID).First(&subject)
-
-	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 			"code":    404,
 			"status":  "Not Found",
 			"message": "There is no subject with such an id",
 		})
+		return
+	} else if result.Error != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, result.Error)
 		return
 	}
 	result2 := db.connection.Debug().Delete(&subject)

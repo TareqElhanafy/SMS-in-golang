@@ -52,6 +52,13 @@ func main() {
 				return
 			}
 		})
+		usersRoutes.DELETE("/:ID/delete", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
+			err := userController.DeleteUser(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		})
 		usersRoutes.GET("/all", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
 			ctx.JSON(200, "hi")
 		})
@@ -60,7 +67,7 @@ func main() {
 	profsRoutes := server.Group("/profs")
 	{
 		profsRoutes.POST("/new", middleware.Auth(), middleware.IsAdmin(), func(ctx *gin.Context) {
-			err := professorController.StoreProf(ctx)
+			err := professorController.StoreOrUpdateProf(ctx)
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			}

@@ -9,6 +9,7 @@ import (
 //UserService interface
 type UserService interface {
 	StoreUser(ctx *gin.Context)
+	DeleteUser(ctx *gin.Context)
 	Login(ctx *gin.Context)
 	Logout(ctx *gin.Context)
 }
@@ -32,4 +33,7 @@ func (service *userService) Login(ctx *gin.Context) {
 }
 func (service *userService) Logout(ctx *gin.Context) {
 	service.repository.Logout(ctx)
+}
+func (service *userService) DeleteUser(ctx *gin.Context) {
+	service.repository.DeleteUser(ctx)
 }
