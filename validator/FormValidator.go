@@ -46,7 +46,7 @@ func Validate(ctx *gin.Context, rules map[string][]string) (map[string][]string,
 				fieldNum, _ := strconv.Atoi(parts[1])
 				num, _ := strconv.Atoi(ctx.PostForm(field))
 				if ctx.PostForm(field) != "" && num < fieldNum {
-					msgs[field] = append(msgs[field], field+"must be at least "+strconv.Itoa(fieldNum))
+					msgs[field] = append(msgs[field], field+" must be at least "+strconv.Itoa(fieldNum))
 				}
 
 			case "pdf":

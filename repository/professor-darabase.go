@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +23,7 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 		"name":     {"required"},
 		"email":    {"required", "email"},
 		"password": {"required", "minlength:6"},
-		"age":      {"required", "integer"},
+		"age":      {"required", "min:35"},
 		"phone":    {"required"},
 	}
 
@@ -42,9 +41,8 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 	}
 	var professor model.Professor
 	professor = model.Professor{
-		UserID: user.ID,
-		Age:    ctx.PostForm("age"),
-		Phone:  ctx.PostForm("phone"),
+		Age:   ctx.PostForm("age"),
+		Phone: ctx.PostForm("phone"),
 	}
 
 	if ctx.Request.Method == http.MethodPost {
@@ -63,8 +61,8 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 			return
 		}
 		tx.Commit()
-		fmt.Print(user)
-	} else if ctx.Request.Method == http.MethodPut {
+	} else if ctx.Request.Method == http.MethodPatch {
+		var storedUser model.User
 		UserID, err := strconv.ParseUint(ctx.Param("ID"), 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -73,7 +71,7 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 			})
 			return
 		}
-		result := db.connection.Debug().Where("id = ?", UserID, "role = ?", "professor").First(&user)
+		result := db.connection.Debug().Where("id = ?", UserID, "role = ?", "professor").First(&storedUser)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"code":    404,
@@ -99,10 +97,9 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 				})
 				return
 			}
-			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
-			pass = string(hashedPassword)
 			user.Password = pass
 		}
+
 		if result2 := db.connection.Debug().Where("id = ?", UserID).Updates(&user); result2.Error != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, result2.Error)
 			return
@@ -118,7 +115,6 @@ func (db *database) StoreOrUpdateProf(ctx *gin.Context) {
 			return
 		}
 	}
-
 	db.connection.Debug().Preload("Professor").Find(&user)
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":   200,
@@ -139,9 +135,7 @@ func (db *database) UpdateProf(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, msgs)
 		return
 	}
-	if ctx.Request.Method == http.MethodPut {
-		fmt.Print("Done")
-	}
+
 	UserID, err := strconv.ParseUint(ctx.Param("ID"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -166,6 +160,7 @@ func (db *database) UpdateProf(ctx *gin.Context) {
 	user = model.User{
 		Name:  ctx.PostForm("name"),
 		Email: ctx.PostForm("email"),
+		Role:  "professor",
 	}
 	pass := ctx.PostForm("password")
 	confirmedPassowrd := ctx.PostForm("confirm_password")
@@ -182,6 +177,7 @@ func (db *database) UpdateProf(ctx *gin.Context) {
 			return
 		}
 		user.Password = pass
+		fmt.Print(user)
 	}
 	if result2 := db.connection.Debug().Where("id = ?", UserID).Updates(&user); result2.Error != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, result2.Error)
@@ -203,6 +199,8 @@ func (db *database) UpdateProf(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, result5.Error)
 		return
 	}
+	fmt.Print(user)
+
 	db.connection.Debug().Preload("Professor").Find(&user)
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":   200,
